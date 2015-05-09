@@ -1,0 +1,11 @@
+*.phar
+
+composer.lock
+vendor/
+bin/
+build/
+target/
+
+src/ScayTrase/WebSMS/Tests/fixtures/credentials.json
+
+.idea/
