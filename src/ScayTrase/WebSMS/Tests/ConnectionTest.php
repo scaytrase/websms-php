@@ -9,68 +9,79 @@
 namespace ScayTrase\WebSMS\Tests;
 
 use ScayTrase\WebSMS\Connection\Connection;
+use ScayTrase\WebSMS\Driver\DriverInterface;
+use ScayTrase\WebSMS\Driver\FormDriver;
+use ScayTrase\WebSMS\Driver\JsonDriver;
 use ScayTrase\WebSMS\Message\Message;
 
 class ConnectionTest extends \PHPUnit_Framework_TestCase
 {
-    public function getCredentials()
+    public function getProviders()
     {
-        $credentialsFile = __DIR__.'/fixtures/credentials.json';
-
-        if (!is_file($credentialsFile)) {
-            throw new \UnexpectedValueException(
-                sprintf(
-                    'please, copy "%s" to "%s" and fill in the credentials in order to perform all test',
-                    __DIR__.'/fixtures/credentials.json.dist',
-                    $credentialsFile
-                )
-            );
-        }
-
-        $credentials = json_decode(file_get_contents($credentialsFile), true);
-
-        return $credentials;
+        return array(
+            'JSON Driver' => array(new JsonDriver()),
+            'Form Driver' => array(new FormDriver()),
+        );
     }
 
-    public function testConnectionRequest()
+    /**
+     * @param DriverInterface $driver
+     *
+     * @dataProvider getProviders
+     */
+    public function testConnectionRequest(DriverInterface $driver)
     {
-        $credentials = $this->getCredentials();
-
-        $connection = new Connection($credentials['username'], $credentials['password'], true);
+        $connection = new Connection($driver, 'demo', 'demo', Connection::TEST_SPECIAL);
         $message    = new Message('+79994567890', 'test message');
 
         $this->assertTrue($connection->send($message));
     }
 
-    public function testBalanceChecking()
+
+    /**
+     * @param DriverInterface $driver
+     *
+     * @dataProvider getProviders
+     */
+    public function testBalanceChecking(DriverInterface $driver)
     {
-        $credentials = $this->getCredentials();
-
-        $connection = new Connection($credentials['username'], $credentials['password'], true);
-
+        $connection = new Connection($driver, 'demo', 'demo', Connection::TEST_SPECIAL);
         $this->assertTrue($connection->verify());
         $this->assertGreaterThan(0, $connection->getBalance());
     }
 
     public function invalidCredentialsProvider()
     {
-        return array(
-            'no username' => array(null, 'test'),
-            'no password' => array('test', null),
+        $driversData = $this->getProviders();
+
+        $credentialsData = array(
+            'no username' => array(null, 'demo'),
+            'no password' => array('demo', null),
         );
+
+        $data = array();
+
+        foreach ($driversData as $name => $driver) {
+            foreach ($credentialsData as $pair => $credentials) {
+                $data[sprintf('%s %s', $name, $pair)] = array_merge($driver, $credentials);
+            }
+        }
+
+        return $data;
     }
 
     /**
-     * @expectedException \ScayTrase\WebSMS\Exception\DeliveryException
+     * @expectedException \ScayTrase\WebSMS\Exception\DriverException
      *
-     * @param $username
-     * @param $password
+     * @param DriverInterface $driver
+     * @param                 $username
+     * @param                 $password
      *
      * @dataProvider invalidCredentialsProvider
      */
-    public function testInvalidCredentialsHandling($username, $password)
+    public function testInvalidCredentialsHandling(DriverInterface $driver, $username, $password)
     {
-        $connection = new Connection($username, $password, true);
+        $connection = new Connection($driver, $username, $password, Connection::TEST_SPECIAL);
         $message    = new Message('1234567890', 'test message');
 
         $response = $connection->send($message);
