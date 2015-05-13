@@ -12,6 +12,10 @@ use ScayTrase\WebSMS\Connection\WebSmsStatus;
 
 interface DriverInterface extends WebSmsStatus
 {
+
+    const NORMALIZED_CODE    = 'driver_code';
+    const NORMALIZED_MESSAGE = 'driver_message';
+
     /**
      * @param array $options
      *

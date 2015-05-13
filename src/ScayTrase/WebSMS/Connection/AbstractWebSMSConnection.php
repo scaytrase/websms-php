@@ -14,10 +14,8 @@ use ScayTrase\WebSMS\Exception\CommunicationException;
 use ScayTrase\WebSMS\Exception\DeliveryException;
 use ScayTrase\WebSMS\Message\MessageInterface;
 
-abstract class AbstractWebSMSConnection implements ConnectionInterface, WebSmsStatus, WebSmsApiParams, WebSmsApiResponse
+abstract class AbstractWebSMSConnection implements ConnectionInterface, WebSmsApiParams
 {
-
-
     const TEST_DISABLED = 0;
     const TEST_ENABLED  = 1;
     const TEST_SPECIAL  = -1;
@@ -36,6 +34,8 @@ abstract class AbstractWebSMSConnection implements ConnectionInterface, WebSmsSt
     protected $driver;
     /** @var  FormDriver */
     protected $balanceDriver;
+    /** @var  array */
+    private $lastStatus;
 
     /**
      * @return float
@@ -78,7 +78,25 @@ abstract class AbstractWebSMSConnection implements ConnectionInterface, WebSmsSt
             )
         );
 
+        if ($status[DriverInterface::NORMALIZED_CODE] !== DriverInterface::STATUS_OK) {
+            throw new DeliveryException(
+                $message,
+                $status[DriverInterface::STATUS_OK],
+                $status[DriverInterface::NORMALIZED_CODE]
+            );
+        }
+
+        $this->lastStatus = $status;
+
         return true;
+    }
+
+    /**
+     * @return array
+     */
+    public function getLastStatus()
+    {
+        return $this->lastStatus;
     }
 
     /**

@@ -12,13 +12,13 @@ use Buzz\Client\FileGetContents;
 use Buzz\Message\Form\FormRequest;
 use Buzz\Message\Request;
 use Buzz\Message\Response;
-use ScayTrase\WebSMS\Exception\DriverException;
+use ScayTrase\WebSMS\Exception\InvalidResponseException;
 
 class JsonDriver implements DriverInterface
 {
     const HTTP_AccessPoint_Send = 'http://cab.websms.ru/json_in5.asp';
-    const Error_Message = 'error';
-    const Error_Code = 'err_num';
+    const Error_Message         = 'error';
+    const Error_Code            = 'err_num';
 
     public function doSendRequest(array $options)
     {
@@ -34,10 +34,14 @@ class JsonDriver implements DriverInterface
         $json   = $response->getContent();
         $status = json_decode($json, true);
 
-        if ($status[static::Error_Code] !== static::STATUS_OK) {
-            throw new DriverException($status[static::Error_Message], $status[static::Error_Code]);
+        if (!isset($status[static::Error_Code])) {
+            throw new InvalidResponseException('JSON response does not contain response code');
         }
 
-        return $status;
+        $normalized_status = $status;
+        $normalized_status[self::NORMALIZED_MESSAGE] = $status[self::Error_Message];
+        $normalized_status[self::NORMALIZED_CODE]    = $status[self::Error_Code];
+
+        return $normalized_status;
     }
 }

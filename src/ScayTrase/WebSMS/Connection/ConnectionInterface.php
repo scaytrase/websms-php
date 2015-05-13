@@ -26,4 +26,9 @@ interface ConnectionInterface
      * @return bool Verifies connection properties
      */
     public function verify();
+
+    /**
+     * @return array
+     */
+    public function getLastStatus();
 }

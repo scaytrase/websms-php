@@ -12,7 +12,7 @@ use Buzz\Client\FileGetContents;
 use Buzz\Message\Form\FormRequest;
 use Buzz\Message\Request;
 use Buzz\Message\Response;
-use ScayTrase\WebSMS\Exception\DriverException;
+use ScayTrase\WebSMS\Exception\UnexpectedResponseException;
 
 class FormDriver implements DriverInterface
 {
@@ -20,17 +20,40 @@ class FormDriver implements DriverInterface
     const HTTP_AccessPoint_Balance = 'http://cab.websms.ru/http_credit.asp';
 
     const Error_Message = 'error_num';
-    const Error_Code    = 'error_num';
+    const Error_Code    = 'error_code';
+
+    const Section_Common  = 'Common';
+    const Section_Summary = 'Summary';
 
     public function doSendRequest(array $options)
     {
         $data = $this->doRealRequest(self::HTTP_AccessPoint_Send, $options);
 
-        if (strstr(self::Error_Code, $data) === false) {
-            throw new DriverException($data);
+        $status = parse_ini_string($data, true);
+
+        if (!isset($status[self::Section_Common][self::Error_Message])) {
+            throw new UnexpectedResponseException('Response either does not contain common section or error message');
         }
 
-        return $data;
+        $normalized_status = array();
+        $normalized_status = array_merge_recursive($normalized_status, $status[self::Section_Common]);
+        if (isset($status[self::Section_Summary])) {
+            $normalized_status = array_merge_recursive($normalized_status, $status[self::Section_Summary]);
+        }
+
+        foreach ($status as $key => $section) {
+            if (is_int($key)) {
+                $normalized_status['sms'][] = $section;
+            }
+        }
+
+        $normalized_status[self::NORMALIZED_MESSAGE] = $status[self::Section_Common][self::Error_Message];
+        $normalized_status[self::NORMALIZED_CODE]    =
+            isset($status[self::Section_Common][self::Error_Code]) ?
+                $status[self::Section_Common][self::Error_Code] :
+                self::STATUS_OK;
+
+        return $normalized_status;
     }
 
     public function doBalanceRequest(array $options)

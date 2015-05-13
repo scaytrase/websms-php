@@ -8,7 +8,12 @@
 
 namespace ScayTrase\WebSMS\Connection;
 
-
+/**
+ * Interface WebSmsApiParams
+ *
+ * @package ScayTrase\WebSMS\Connection
+ * @link    http://websms.ru/content/doc/HTTP_HTTPSsendmethod_v1.8.pdf?5488
+ */
 interface WebSmsApiParams
 {
     const PARAM_Username           = 'http_username';

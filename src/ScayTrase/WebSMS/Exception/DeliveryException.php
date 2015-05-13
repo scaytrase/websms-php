@@ -11,13 +11,17 @@ namespace ScayTrase\WebSMS\Exception;
 use Exception;
 use ScayTrase\WebSMS\Message\MessageInterface;
 
-class DeliveryException extends \Exception
+class DeliveryException extends ConnectionException
 {
     /** @var  MessageInterface */
     protected $failedMessage;
 
-    public function __construct(MessageInterface $failedMessage = null, $message = "", $code = 0, Exception $previous = null)
-    {
+    public function __construct(
+        MessageInterface $failedMessage = null,
+        $message = "",
+        $code = 0,
+        Exception $previous = null
+    ) {
         $this->failedMessage = $failedMessage;
 
         parent::__construct($message, $code, $previous);
