@@ -30,7 +30,8 @@ class MassMessageTest extends AbstractWebSMSTest
 
         $connection->send($message);
 
-        $this->assertCount(2, $connection->getLastStatus()['sms']);
+        $lastStatus = $connection->getLastStatus();
+        $this->assertCount(2, $lastStatus['sms']);
     }
 
 //    /**
