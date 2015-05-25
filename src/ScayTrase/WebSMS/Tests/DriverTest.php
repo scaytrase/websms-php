@@ -10,6 +10,9 @@ namespace ScayTrase\WebSMS\Tests;
 
 use ScayTrase\WebSMS\Connection\Connection;
 use ScayTrase\WebSMS\Driver\DriverInterface;
+use ScayTrase\WebSMS\Exception\DeliveryException;
+use ScayTrase\WebSMS\Exception\DriverException;
+use ScayTrase\WebSMS\Exception\WebSMSException;
 
 class DriverTest extends AbstractWebSMSTest
 {
@@ -60,8 +63,6 @@ class DriverTest extends AbstractWebSMSTest
     }
 
     /**
-     * @expectedException \ScayTrase\WebSMS\Exception\DriverException
-     *
      * @param DriverInterface $driver
      * @param                 $username
      * @param                 $password
@@ -73,6 +74,17 @@ class DriverTest extends AbstractWebSMSTest
         $connection = new Connection($driver, $username, $password, Connection::TEST_ENABLED);
         $message    = $this->getMessageMock();
 
-        $connection->send($message);
+        try {
+            $connection->send($message);
+        } catch (WebSMSException $exception) {
+            if ($exception instanceof DeliveryException){
+                return;
+            } elseif ($exception instanceof DriverException){
+                return;
+            } else {
+                $this->fail('Unexpected exception');
+            }
+
+        }
     }
 }

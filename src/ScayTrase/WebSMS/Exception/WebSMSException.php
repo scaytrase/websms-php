@@ -2,13 +2,13 @@
 /**
  * Created by PhpStorm.
  * User: Pavel
- * Date: 2015-05-09
- * Time: 20:26
+ * Date: 2015-05-25
+ * Time: 20:37
  */
 
 namespace ScayTrase\WebSMS\Exception;
 
-class ConnectionException extends WebSMSException
+class WebSMSException extends \Exception
 {
 
 }

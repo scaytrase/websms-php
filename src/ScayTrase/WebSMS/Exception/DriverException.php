@@ -8,7 +8,7 @@
 
 namespace ScayTrase\WebSMS\Exception;
 
-class DriverException extends \Exception
+class DriverException extends WebSMSException
 {
 
 }

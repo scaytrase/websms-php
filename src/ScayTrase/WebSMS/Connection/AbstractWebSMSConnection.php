@@ -81,7 +81,7 @@ abstract class AbstractWebSMSConnection implements ConnectionInterface, WebSmsAp
         if ($status[DriverInterface::NORMALIZED_CODE] !== DriverInterface::STATUS_OK) {
             throw new DeliveryException(
                 $message,
-                $status[DriverInterface::STATUS_OK],
+                $status[DriverInterface::NORMALIZED_MESSAGE],
                 $status[DriverInterface::NORMALIZED_CODE]
             );
         }
