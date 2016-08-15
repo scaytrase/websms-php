@@ -1,5 +1,3 @@
-*.phar
-
 composer.lock
 vendor/
 bin/
@@ -8,4 +6,3 @@ target/
 
 src/ScayTrase/WebSMS/Tests/fixtures/credentials.json
 
-.idea/
